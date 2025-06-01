@@ -1,39 +1,30 @@
 version: 0.2
 
-env:
-variables:
-MAVEN_OPTS: "-Xmx1024m"
-
 phases:
-install:
-runtime-versions:
-java: corretto17           # Usa Amazon Corretto o la versión de Java que necesites
-commands:
-- echo "Instalando Maven..."  # CodeBuild ya incluye Maven en la imagen standard
-- mvn --version
-
-pre_build:
-commands:
-- echo "Ejecutando pruebas unitarias..."
-- mvn test -B          # -B para modo batch, fallará si hay tests rotos
-
-build:
-commands:
-- echo "Empaquetando aplicación..."
-- mvn package -DskipTests -B   # Genera el JAR/WAR en target/
-
-post_build:
-commands:
-- echo "Build completo. Artefactos en target/."
+  install:
+    runtime-versions:
+      java: corretto17
+    commands:
+      - echo Installing dependencies...
+      - mvn --version
+      
+  pre_build:
+    commands:
+      - echo Pre-build phase...
+      - mvn clean
+      
+  build:
+    commands:
+      - echo Build phase started...
+      - mvn compile
+      - mvn test
+      - mvn package -DskipTests
+      
+  post_build:
+    commands:
+      - echo Build completed successfully
 
 artifacts:
-files:
-- "target//*.jar"    # o target//.war según tu empaquetado
-- "target/lib/**/"    # si tu build genera dependencias juntas
-base-directory: .        # punto de partida para rutas de artifacts
-
-reports:
-junit_reports:
-files:
-- "target/surefire-reports/TEST-*.xml"  # resultados de pruebas JUnit
-file-format: JUNIT
+  files:
+    - target/*.jar
+  name: finnancy-backend-artifact
