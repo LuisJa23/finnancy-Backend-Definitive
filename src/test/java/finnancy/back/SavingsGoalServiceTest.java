@@ -49,17 +49,17 @@ class SavingsGoalServiceTest {
         when(savingsGoalRepository.findById("1")).thenReturn(Optional.of(existing));
         when(savingsGoalRepository.save(any(SavingsGoal.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Datos de actualización
+        // Datos de actualización: solo nombre y target
         SavingsGoal update = new SavingsGoal();
         update.setName("Nueva Meta");
         update.setTargetAmount(1000.0);
-        update.setCurrentAmount(800.0);
 
         SavingsGoal result = savingsGoalService.updateSavingsGoal("1", update);
 
         assertEquals("Nueva Meta", result.getName());
-        assertEquals(800.0, result.getCurrentAmount());
         assertEquals(1000.0, result.getTargetAmount());
+        // currentAmount should remain unchanged
+        assertEquals(200.0, result.getCurrentAmount());
         verify(savingsGoalRepository).findById("1");
         verify(savingsGoalRepository).save(result);
     }
