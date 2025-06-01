@@ -12,6 +12,8 @@ phases:
     commands:
       - echo Pre-build phase...
       - mvn clean
+      - echo "Ejecutando pruebas unitarias..."
+      - mvn test -B
       
   build:
     commands:
@@ -28,3 +30,9 @@ artifacts:
   files:
     - target/*.jar
   name: finnancy-backend-artifact
+
+reports:
+  junit_reports:
+    files:
+      - "target/surefire-reports/TEST-*.xml"
+    file-format: JUNIT
