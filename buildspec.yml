@@ -1,30 +1,40 @@
 version: 0.2
 
+env:
+  variables:
+    JAVA_HOME: "/usr/lib/jvm/java-21-amazon-corretto"
+    MAVEN_HOME: "/usr/share/maven"
+    MAVEN_CONFIG: "$HOME/.m2"
+
 phases:
   install:
     runtime-versions:
-      java: corretto17
+      java: corretto21
     commands:
-      - echo Installing dependencies...
+      - echo Entered the install phase...
+      - echo Installing Maven...
       - mvn --version
       
   pre_build:
     commands:
-      - echo Pre-build phase...
+      - echo Entered the pre_build phase...
+      - echo Cleaning previous builds...
       - mvn clean
       
   build:
     commands:
-      - echo Build phase started...
+      - echo Entered the build phase...
+      - echo Starting build on `date`
       - mvn compile
       - mvn test
       - mvn package -DskipTests
       
   post_build:
     commands:
-      - echo Build completed successfully
+      - echo Entered the post_build phase...
+      - echo Build completed on `date`
 
 artifacts:
   files:
     - target/*.jar
-  name: finnancy-backend-artifact
+  name: finnancy-backend-$(date +%Y-%m-%d)
