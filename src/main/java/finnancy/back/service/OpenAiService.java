@@ -74,7 +74,7 @@ public class OpenAiService {
                 });
     }
 
-    private String buildFinancialContext(List<Transaction> transactions, List<SavingsGoal> goals) {
+    public String buildFinancialContext(List<Transaction> transactions, List<SavingsGoal> goals) {
         // Resumen de transacciones
         double totalIncome = transactions.stream()
                 .filter(t -> t.getType() == TransactionType.INCOME)
