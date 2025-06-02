@@ -18,6 +18,7 @@ phases:
       - echo Building and packaging application...
       - mvn compile
       - mvn package -DskipTests
+      - mvn clean package -DskipTests
       
   post_build:
     commands:
@@ -27,3 +28,5 @@ artifacts:
   files:
     - target/*.jar
   name: finnancy-backend-artifact
+  discard-paths: yes
+  base-directory: target
