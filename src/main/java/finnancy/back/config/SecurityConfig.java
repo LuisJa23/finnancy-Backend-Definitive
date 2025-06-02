@@ -44,9 +44,11 @@ public class SecurityConfig {
         cfg.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",  // Origen común para desarrollo frontend
                 "http://localhost:5173",  // Confirmado por el usuario
-                "https://finnancy-front.netlify.app" // Origen de producción
+                "https://finnancy-front.netlify.app", // Origen de producción
+                "http://finnancy-artefacts-bucket-01.s3-website.us-east-2.amazonaws.com", // S3 bucket HTTP
+                "https://finnancy-artefacts-bucket-01.s3-website.us-east-2.amazonaws.com" // S3 bucket HTTPS
         ));
-        cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // Especifica los métodos
+        cfg.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD")); // Especifica los métodos
         cfg.setAllowedHeaders(Arrays.asList("*"));             // cualquier cabecera
         cfg.setAllowCredentials(true);                         // si usaras cookies/autorización
 

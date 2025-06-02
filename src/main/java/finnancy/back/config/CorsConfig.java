@@ -14,13 +14,16 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(
-                            "http://localhost:3000",
-                            "http://finnancy-artefacts-bucket-01.s3-website.us-east-2.amazonaws.com"
+                        .allowedOriginPatterns(
+                            "http://localhost:*",
+                            "http://finnancy-artefacts-bucket-01.s3-website.us-east-2.amazonaws.com",
+                            "https://finnancy-artefacts-bucket-01.s3-website.us-east-2.amazonaws.com"
                         )
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD")
                         .allowedHeaders("*")
-                        .allowCredentials(true);
+                        .allowCredentials(true)
+                        .exposedHeaders("*")
+                        .maxAge(3600);
             }
         };
     }
