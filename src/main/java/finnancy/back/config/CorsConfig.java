@@ -16,8 +16,8 @@ public class CorsConfig {
                 registry.addMapping("/**")
                         .allowedOriginPatterns(
                             "http://localhost:*",
-                            "http://finnancy-artefacts-bucket-01.s3-website.us-east-2.amazonaws.com",
-                            "https://finnancy-artefacts-bucket-01.s3-website.us-east-2.amazonaws.com"
+                            "http://finnancy-frontend.us-east-2.elasticbeanstalk.com",
+                            "https://finnancy-frontend.us-east-2.elasticbeanstalk.com"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD")
                         .allowedHeaders("*")
