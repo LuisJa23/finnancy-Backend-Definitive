@@ -7,6 +7,8 @@ import finnancy.back.enums.PaymentMethod;
 import finnancy.back.enums.TransactionType;
 import finnancy.back.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.List;
 @Service
 public class TransactionService {
 
+    private static final Logger logger = LoggerFactory.getLogger(TransactionService.class);
     private final TransactionRepository transactionRepository;
 
     public TransactionService(TransactionRepository transactionRepository) {
@@ -27,6 +30,7 @@ public class TransactionService {
      * Crea una nueva transacción
      */
     public Transaction createTransaction(Transaction transaction) {
+        logger.debug("Creando transacción para usuario: {}", transaction.getUserId());
         return transactionRepository.save(transaction);
     }
 
@@ -61,45 +65,87 @@ public class TransactionService {
     public List<Transaction> getTransactionsByFilters(String userId, LocalDate startDate, LocalDate endDate, 
                                                      String category, TransactionType type, 
                                                      PaymentMethod paymentMethod) {
-        if (startDate != null && endDate != null) {
-            return transactionRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
+        logger.debug("Buscando transacciones para usuario: {}", userId);
+        
+        List<Transaction> transactions;
+        
+        // Si no se proporciona userId, devolver todas las transacciones
+        if (userId == null) {
+            transactions = transactionRepository.findAll();
+        } else if (startDate != null && endDate != null) {
+            transactions = transactionRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
         } else if (category != null && type != null) {
-            return transactionRepository.findByUserIdAndCategoryAndType(userId, category, type);
+            transactions = transactionRepository.findByUserIdAndCategoryAndType(userId, category, type);
         } else if (paymentMethod != null) {
-            return transactionRepository.findByUserIdAndPaymentMethod(userId, paymentMethod);
+            transactions = transactionRepository.findByUserIdAndPaymentMethod(userId, paymentMethod);
         } else if (type != null) {
-            return transactionRepository.findByUserIdAndType(userId, type);
+            transactions = transactionRepository.findByUserIdAndType(userId, type);
         } else {
-            return transactionRepository.findByUserId(userId);
+            transactions = transactionRepository.findByUserId(userId);
         }
+        
+        logger.debug("Encontradas {} transacciones para usuario: {}", transactions.size(), userId);
+        return transactions;
+    }
+
+    /**
+     * Método de debug para obtener información detallada de las transacciones
+     */
+    public List<Transaction> getAllTransactionsForDebug(String userId) {
+        logger.info("DEBUG: Buscando TODAS las transacciones para usuario: {}", userId);
+        
+        // Primero intentar con findByUserId
+        List<Transaction> transactions = transactionRepository.findByUserId(userId);
+        logger.info("DEBUG: findByUserId devolvió {} transacciones", transactions.size());
+        
+        // Si no hay resultados, intentar obtener todas las transacciones de la base de datos
+        if (transactions.isEmpty()) {
+            logger.warn("DEBUG: No se encontraron transacciones con findByUserId, obteniendo todas las transacciones");
+            List<Transaction> allTransactions = transactionRepository.findAll();
+            logger.info("DEBUG: Total de transacciones en la base de datos: {}", allTransactions.size());
+            
+            // Filtrar manualmente por userId
+            transactions = allTransactions.stream()
+                .filter(t -> userId.equals(t.getUserId()))
+                .toList();
+            logger.info("DEBUG: Transacciones filtradas manualmente para usuario {}: {}", userId, transactions.size());
+            
+            // Log de las primeras transacciones para debug
+            allTransactions.stream().limit(5).forEach(t -> 
+                logger.info("DEBUG: Transacción muestra - ID: {}, UserID: {}, Amount: {}", 
+                    t.getId(), t.getUserId(), t.getAmount()));
+        }
+        
+        return transactions;
     }
 
     public FinancialSummaryDTO getFinancialSummary(String userId) {
-    List<Transaction> transactions = transactionRepository.findByUserId(userId);
-    
-    double totalIncome = 0;
-    double totalExpenses = 0;
-    int incomeCount = 0;
-    int expenseCount = 0;
-    
-    for (Transaction transaction : transactions) {
-        if (transaction.getType() == TransactionType.INCOME) {
-            totalIncome += transaction.getAmount();
-            incomeCount++;
-        } else {
-            totalExpenses += transaction.getAmount();
-            expenseCount++;
+        List<Transaction> transactions = transactionRepository.findByUserId(userId);
+        logger.debug("Calculando resumen financiero para usuario: {} con {} transacciones", userId, transactions.size());
+        
+        double totalIncome = 0;
+        double totalExpenses = 0;
+        int incomeCount = 0;
+        int expenseCount = 0;
+        
+        for (Transaction transaction : transactions) {
+            if (transaction.getType() == TransactionType.INCOME) {
+                totalIncome += transaction.getAmount();
+                incomeCount++;
+            } else {
+                totalExpenses += transaction.getAmount();
+                expenseCount++;
+            }
         }
+        
+        double totalBalance = totalIncome - totalExpenses;
+        
+        return new FinancialSummaryDTO(
+            totalBalance,
+            totalIncome,
+            totalExpenses,
+            incomeCount,
+            expenseCount
+        );
     }
-    
-    double totalBalance = totalIncome - totalExpenses;
-    
-    return new FinancialSummaryDTO(
-        totalBalance,
-        totalIncome,
-        totalExpenses,
-        incomeCount,
-        expenseCount
-    );
-}
 }
